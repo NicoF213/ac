@@ -1,0 +1,70 @@
+<?php
+
+// http://integratepro.net/codeshare/28CLQmNVEMrwQ
+
+// ActiveCampaign url & API Key
+$url = 'https://libertevivrevip.api-us1.com';
+$api_key = '2ee5ecb10719b53b1e6631bc6a373cae189f44e9d82fc34ae6977819132541bf3d8aafdb';
+$secret_key = 'kkdhirfhdh75hebd32';  // random string of characters, numbers and letters only
+
+
+/***** do NOT edit below this line *****/
+
+/*****
+* functions
+*
+*****/
+function go_curl($id, $api_action)
+{
+    global $url, $api_key;
+    
+    if ($api_action == "contact_delete")
+    {
+        $params = array(
+            'api_key'                   => $api_key,
+            'api_action'                => $api_action,
+            'api_output'                => 'serialize',
+            'id'                        => $id,
+        );
+    }
+        
+    $query = "";
+    if (!empty($params)) foreach( $params as $key => $value ) $query .= urlencode($key) . '=' . urlencode($value) . '&';
+    $query = rtrim($query, '& ');
+    
+    $data = "";
+    if (!empty($post)) foreach( $post as $key => $value ) $data .= urlencode($key) . '=' . urlencode($value) . '&';
+    $data = rtrim($data, '& ');
+
+    $url = rtrim($url, '/ ');
+    
+    if ( !function_exists('curl_init') ) die('CURL not supported.');
+    
+    if ( $params['api_output'] == 'json' && !function_exists('json_decode') ) {
+        die('JSON not supported. (introduced in PHP 5.2.0)');
+    }
+    
+    $api = $url . '/admin/api.php?' . $query;
+    
+    $request = curl_init($api);
+    curl_setopt($request, CURLOPT_HEADER, 0);
+    curl_setopt($request, CURLOPT_RETURNTRANSFER, 1);
+    curl_setopt($request, CURLOPT_POSTFIELDS, $data);
+    curl_setopt($request, CURLOPT_FOLLOWLOCATION, true);
+    
+    $response = (string)curl_exec($request);
+   
+    curl_close($request);
+    
+    if ( !$response ) {
+        die('Nothing was returned. Do you have a connection to Email Marketing server?');
+    }    
+    
+    return $response;
+}
+
+$id = trim(strip_tags($_POST['contact']['id']));
+$secret = trim(strip_tags($_GET['secret']));
+$api_action = 'contact_delete';
+
+if ($id > 0 && $secret === $secret_key && $secret_key != "") $result = unserialize(go_curl($id, $api_action));
